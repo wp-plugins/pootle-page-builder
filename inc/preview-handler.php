@@ -11,7 +11,7 @@
  * @since 0.1.0
  */
 function pootlepb_preview() {
-	if ( isset( $_GET['pootlepb_preview'] ) && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'ppb-panels-preview' ) ) {
+	if ( null !== filter_input( INPUT_GET, 'pootlepb_preview' ) && wp_verify_nonce( filter_input( INPUT_GET, '_wpnonce' ), 'ppb-panels-preview' ) ) {
 		global $pootlepb_is_preview;
 		$pootlepb_is_preview = true;
 		// Set the panels home state to true
@@ -34,6 +34,7 @@ add_action( 'template_redirect', 'pootlepb_preview' );
  */
 function pootlepb_is_preview() {
 	global $pootlepb_is_preview;
+
 	return (bool) $pootlepb_is_preview;
 }
 
@@ -41,13 +42,14 @@ function pootlepb_is_preview() {
  * This is a way to show previews of panels, especially for the home page.
  *
  * @param $val
+ *
  * @return array
  * @since 0.1.0
  */
 function pootlepb_preview_load_data( $val ) {
 	if ( isset( $_GET['pootlepb_preview'] ) ) {
 
-		$val = pootlepb_get_panels_data_from_post( $_POST );
+		$val = pootlepb_get_panels_data_from_post();
 	}
 
 	return $val;

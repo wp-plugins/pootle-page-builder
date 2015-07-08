@@ -17,7 +17,7 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 	 */
 	protected static $instance;
 
-	/** @var Current bg type video */
+	/** @var string Current bg type video */
 	protected $row_bg_type;
 
 	/**
@@ -42,8 +42,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Initiates vars and properties for row styling
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_style_vars( $attr, $style ) {
@@ -62,8 +64,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Set's row background color
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_bg_color( $attr, $style ) {
@@ -77,8 +81,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Set's row border
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_border( $attr, $style ) {
@@ -95,13 +101,17 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Set's row background image
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_bg_image( $attr, $style ) {
 
-		if ( '.bg_image' != $this->row_bg_type ) { return $attr; }
+		if ( '.bg_image' != $this->row_bg_type ) {
+			return $attr;
+		}
 
 		if ( ! empty( $style['background_image'] ) ) {
 			$attr['style'] .= 'background-image: url( ' . esc_url( $style['background_image'] ) . ' ); ';
@@ -114,8 +124,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Set's row bg image repeat
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_bg_img_repeat( $attr, $style ) {
@@ -135,6 +147,7 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_bg_img_size( $attr, $style ) {
@@ -148,8 +161,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Row full width class
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 * @since 0.1.0
 	 */
@@ -165,14 +180,18 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Row bg parallax class
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 * @since 0.1.0
 	 */
 	public function row_bg_parallax( $attr, $style ) {
 
-		if ( '.bg_image' != $this->row_bg_type ) { return $attr; }
+		if ( '.bg_image' != $this->row_bg_type ) {
+			return $attr;
+		}
 
 		if ( ! empty( $style['background_parallax'] ) ) {
 			$attr['class'][] = 'ppb-parallax';
@@ -184,33 +203,53 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Row bg video class and video mobile image
+	 *
 	 * @param array $attr
 	 * @param array $style
 	 * @param array $cells
+	 *
 	 * @return array
 	 * @since 0.1.0
 	 */
 	public function row_height( $attr, $style, $cells = array() ) {
-		//Apply height if row doesn't contain widgets
-		$contains_widgets = false;
-		foreach ( $cells as $cell ) {
 
-			if ( ! empty( $cell ) ) {
-				$contains_widgets = true;
+		$row_empty = ! $this->row_has_content( $cells );
+
+		if ( $row_empty ) {
+			if ( ! empty( $style['row_height'] ) ) {
+				$attr['style'] .= 'height:' . $style['row_height'] . 'px;';
 			}
-		}
-
-		if ( ! $contains_widgets ) {
-			$attr['style'] .= ! empty( $style['row_height'] ) ? 'height:' . $style['row_height'] . 'px;' : '';
 		}
 
 		return $attr;
 	}
 
 	/**
+	 * Return true if row contains content blocks in any cell
+	 * @param array $cells Cells of the row to search for content blocks in
+	 * @return bool
+	 */
+	protected function row_has_content( $cells ) {
+
+		//Loop through the cells
+		foreach ( $cells as $cell ) {
+
+			//If cell contains content blocks
+			if ( ! empty( $cell ) ) {
+				return true;
+			}
+		}
+
+		//No content blocks found in the cells of the row
+		return false;
+	}
+
+	/**
 	 * Row bg video class and video mobile image
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 * @since 0.1.0
 	 */
@@ -225,8 +264,10 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Row bg video class and video mobile image
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_bg_vid_css( $attr, $style ) {
@@ -245,14 +286,16 @@ final class Pootle_Page_Builder_Custom_Styles extends Pootle_Page_Builder_Abstra
 
 	/**
 	 * Row bg video class and video mobile image
+	 *
 	 * @param array $attr
 	 * @param array $style
+	 *
 	 * @return array
 	 */
 	public function row_inline_css( $attr, $style ) {
 
 		if ( ! empty( $style['style'] ) ) {
-			$attr['style'] .= preg_replace( "/\r|\n/", ";", $style['style'] );;
+			$attr['style'] .= preg_replace( "/\r|\n/", ';', $style['style'] );;
 		}
 
 		return $attr;

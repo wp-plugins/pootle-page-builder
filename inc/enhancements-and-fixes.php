@@ -12,6 +12,7 @@
  *
  * @param string $content Post content
  * @param object $post Post object
+ *
  * @return string Post content
  * @since 0.1.0
  */
@@ -29,6 +30,7 @@ function pootlepb_wp_seo_filter( $content, $post ) {
 
 	return $content;
 }
+
 add_filter( 'wpseo_pre_analysis_post_content', 'pootlepb_wp_seo_filter', 10, 2 );
 
 /**
@@ -43,6 +45,7 @@ function pootlepb_no_admin_notices() {
 		remove_all_actions( 'admin_notices' );
 	}
 }
+
 add_action( 'admin_notices', 'pootlepb_no_admin_notices', 0 );
 
 
@@ -52,9 +55,9 @@ add_action( 'admin_notices', 'pootlepb_no_admin_notices', 0 );
  */
 function pootlepb_wp_import_post_meta( $post_meta ) {
 	foreach ( $post_meta as $i => $meta ) {
-		if ( $meta['key'] == 'panels_data' ) {
+		if ( 'panels_data' == $meta['key'] ) {
 			$value = $meta['value'];
-			$value = preg_replace( "/[\r\n]/", "<<<br>>>", $value );
+			$value = preg_replace( "/[\r\n]/", '<<<br>>>', $value );
 			$value = preg_replace( '!s:(\d+):"(.*?)";!e', "'s:'.strlen('$2').':\"$2\";'", $value );
 			$value = unserialize( $value );
 			$value = array_map( 'pootlepb_wp_import_post_meta_map', $value );
@@ -65,4 +68,5 @@ function pootlepb_wp_import_post_meta( $post_meta ) {
 
 	return $post_meta;
 }
+
 add_filter( 'wp_import_post_meta', 'pootlepb_wp_import_post_meta' );

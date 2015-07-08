@@ -46,8 +46,10 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 	}
 
 	/**
-	 * Filter the content of the panel, adding all the widgets.
+	 * Filter the content of the panel, adding all the content blocks.
+	 *
 	 * @param string $content Post content
+	 *
 	 * @return string Pootle page builder post content
 	 * @filter the_content
 	 * @since 0.1.0
@@ -62,7 +64,7 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 			return $content;
 		}
 
-		$post = get_post( $postID );
+		$post          = get_post( $postID );
 		$panel_content = $this->panels_render( $post->ID );
 
 		if ( ! empty( $panel_content ) ) {
@@ -74,8 +76,10 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 
 	/**
 	 * Set's panels data if empty
+	 *
 	 * @param array|bool $panels_data
 	 * @param int $post_id
+	 *
 	 * @return bool
 	 * @since 0.1.0
 	 */
@@ -98,26 +102,24 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 
 	/**
 	 * Render the panels
-	 *
 	 * @param int|string|bool $post_id The Post ID or 'home'.
-	 * @param bool $enqueue_css Should we also enqueue the layout CSS.
 	 * @param array|bool $panels_data Existing panels data. By default load from settings or post meta.
 	 * @uses Pootle_Page_Builder_Front_Css_Js::panels_generate_css()
 	 * @return string
 	 * @since 0.1.0
 	 */
-	function panels_render( $post_id = false, $panels_data = false ) {
+	function panels_render( $post_id = false, $panels_data = array() ) {
 		//Post ID and Panels Data
 		if ( $this->any_problem( $panels_data, $post_id ) ) {
 			return '';
 		}
 
 		global $pootlepb_current_post;
-		$old_current_post = $pootlepb_current_post;
+		$old_current_post      = $pootlepb_current_post;
 		$pootlepb_current_post = $post_id;
 
 		if ( post_password_required( $post_id ) && get_post_type( $post_id ) != 'wc_product_tab' ) {
-			return false;
+			return '';
 		}
 
 		//Removing filters for proper functionality
@@ -150,8 +152,10 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 
 	/**
 	 * Convert panels data into grid>cell>widget format
+	 *
 	 * @param array $grids
 	 * @param array $panels_data
+	 *
 	 * @since 0.1.0
 	 */
 	protected function grids_array( &$grids, $panels_data ) {
@@ -166,16 +170,18 @@ final class Pootle_Page_Builder_Render_Layout extends Pootle_Page_Builder_Render
 			}
 		}
 
-		$this->grids_array_add_widgets( $grids, $panels_data );
+		$this->grids_array_add_blocks( $grids, $panels_data );
 	}
 
 	/**
-	 * Adds widgets to grid array from panels data
+	 * Adds content blocks to grid array from panels data
+	 *
 	 * @param array $grids
 	 * @param array $panels_data
+	 *
 	 * @since 0.1.0
 	 */
-	protected function grids_array_add_widgets( &$grids, $panels_data ) {
+	protected function grids_array_add_blocks( &$grids, $panels_data ) {
 
 		if ( ! empty( $panels_data['widgets'] ) && is_array( $panels_data['widgets'] ) ) {
 			foreach ( $panels_data['widgets'] as $widget ) {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: shramee
@@ -66,13 +67,12 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 
 	/**
 	 * Add a help tab to pages with panels.
-	 * @param $prefix
 	 * @action load-post-new.php, load-page.php
 	 * @since 0.1.0
 	 */
-	public function add_help_tab( $prefix ) {
+	public function add_help_tab() {
 		$screen = get_current_screen();
-		if ( $screen->base == 'post' && in_array( $screen->id, pootlepb_settings( 'post-types' ) ) ) {
+		if ( 'post' == $screen->base && in_array( $screen->id, pootlepb_settings( 'post-types' ) ) ) {
 			$screen->add_help_tab( array(
 				'id'       => 'panels-help-tab', //unique id for the tab
 				'title'    => __( 'Page Builder', 'ppb-panels' ), //unique visible title for the tab
@@ -104,19 +104,13 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 	 */
 	public function save_post( $post_id, $post ) {
 
-		$pass = apply_filters( 'pootlepb_save_post_pass', ! empty( $_POST['pootlepb_nonce'] ), $post );
+		$pass = apply_filters( 'pootlepb_save_post_pass', true, $post );
 
 		if ( empty( $pass ) ) {
 			return;
 		}
 
-		// Don't Save panels if Post Type for $post_id is not same as current post ID type
-		// (Prevents population product panels data in saving Tabs via Meta)
-		if ( get_post_type( $_POST['post_ID'] ) != 'wc_product_tab' and get_post_type( $post_id ) == 'wc_product_tab' ) {
-			return;
-		}
-
-		$panels_data = pootlepb_get_panels_data_from_post( $_POST );
+		$panels_data = pootlepb_get_panels_data_from_post();
 
 		if ( function_exists( 'wp_slash' ) ) {
 			$panels_data = wp_slash( $panels_data );
@@ -127,6 +121,7 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 	/**
 	 * @param bool|null $pass
 	 * @param object $post
+	 *
 	 * @return bool
 	 */
 	public function save_post_or_not( $pass, $post ) {
@@ -155,10 +150,22 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 	 * @since 0.1.0
 	 */
 	public function admin_menu() {
-		add_menu_page( 'Home', 'Page Builder', 'manage_options', 'page_builder', array( $this, 'menu_page' ), 'dashicons-screenoptions', 26 );
-		add_submenu_page( 'page_builder', 'Add New', 'Add New', 'manage_options', 'page_builder_add', array( $this, 'menu_page' ) );
-		add_submenu_page( 'page_builder', 'Settings', 'Settings', 'manage_options', 'page_builder_settings', array( $this, 'menu_page' ) );
-		add_submenu_page( 'page_builder', 'Add-ons', 'Add-ons', 'manage_options', 'page_builder_addons', array( $this, 'menu_page' ) );
+		add_menu_page( 'Home', 'Page Builder', 'manage_options', 'page_builder', array(
+			$this,
+			'menu_page',
+		), 'dashicons-screenoptions', 26 );
+		add_submenu_page( 'page_builder', 'Add New', 'Add New', 'manage_options', 'page_builder_add', array(
+			$this,
+			'menu_page',
+		) );
+		add_submenu_page( 'page_builder', 'Settings', 'Settings', 'manage_options', 'page_builder_settings', array(
+			$this,
+			'menu_page',
+		) );
+		add_submenu_page( 'page_builder', 'Add-ons', 'Add-ons', 'manage_options', 'page_builder_addons', array(
+			$this,
+			'menu_page',
+		) );
 	}
 
 	/**
@@ -167,13 +174,22 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 	 */
 	public function options_init() {
 		register_setting( 'pootlepage-add-ons', 'pootlepb_add_ons' );
-		register_setting( 'pootlepage-display', 'siteorigin_panels_display', array( $this, 'pootlepb_options_sanitize_display' ) );
+		register_setting( 'pootlepage-display', 'siteorigin_panels_display', array(
+			$this,
+			'pootlepb_options_sanitize_display',
+		) );
 
 		add_settings_section( 'display', __( 'Display', 'ppb-panels' ), '__return_false', 'pootlepage-display' );
 
 		// The display fields
-		add_settings_field( 'responsive', __( 'Responsive', 'ppb-panels' ), array( $this, 'options_field_generic' ), 'pootlepage-display', 'display', array( 'type' => 'responsive' ) );
-		add_settings_field( 'mobile-width', __( 'Mobile Width', 'ppb-panels' ), array( $this, 'options_field_generic' ), 'pootlepage-display', 'display', array( 'type' => 'mobile-width' ) );
+		add_settings_field( 'responsive', __( 'Responsive', 'ppb-panels' ), array(
+			$this,
+			'options_field_generic',
+		), 'pootlepage-display', 'display', array( 'type' => 'responsive' ) );
+		add_settings_field( 'mobile-width', __( 'Mobile Width', 'ppb-panels' ), array(
+			$this,
+			'options_field_generic',
+		), 'pootlepage-display', 'display', array( 'type' => 'mobile-width' ) );
 	}
 
 	/**
@@ -206,8 +222,10 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 
 	/**
 	 * Output settings field
+	 *
 	 * @param array $args
 	 * @param string $groupName
+	 *
 	 * @since 0.1.0
 	 */
 	public function options_field_generic( $args, $groupName = 'siteorigin_panels_display' ) {
@@ -215,11 +233,11 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 		switch ( $args['type'] ) {
 			case 'responsive' :
 				?><label><input type="checkbox"
-				                name="<?php echo $groupName ?>[<?php echo esc_attr( $args['type'] ) ?>]" <?php checked( $settings[ $args['type'] ] ) ?>
+				                name="<?php echo esc_attr( $groupName ) ?>[<?php echo esc_attr( $args['type'] ) ?>]" <?php checked( $settings[ $args['type'] ] ) ?>
 				                value="1"/> <?php _e( 'Enabled', 'ppb-panels' ) ?></label><?php
 				break;
 			case 'mobile-width' :
-				?><input type="text" name="<?php echo $groupName ?>[<?php echo esc_attr( $args['type'] ) ?>]"
+				?><input type="text" name="<?php echo esc_attr( $groupName ) ?>[<?php echo esc_attr( $args['type'] ) ?>]"
 				         value="<?php echo esc_attr( $settings[ $args['type'] ] ) ?>"
 				         class="small-text" /> <?php _e( 'px', 'ppb-panels' ) ?><?php
 				break;
@@ -232,27 +250,16 @@ final class Pootle_Page_Builder_Admin extends Pootle_Page_Builder_Abstract {
 
 	/**
 	 * Sanitize display options
+	 *
 	 * @param $vals
+	 *
 	 * @return mixed
 	 * @since 0.1.0
 	 */
 	public function pootlepb_options_sanitize_display( $vals ) {
-		foreach ( $vals as $f => $v ) {
-			switch ( $f ) {
-				case 'responsive' :
-				case 'bundled-widgets' :
-					$vals[ $f ] = ! empty( $vals[ $f ] );
-					break;
-				case 'mobile-width' :
-					$vals[ $f ] = intval( $vals[ $f ] );
-					break;
-			}
-		}
-		$vals['copy-content']    = false;
-		$vals['animations']      = true;
-		$vals['inline-css']      = true;
+
+		//Enable Responsive media queries
 		$vals['responsive']      = ! empty( $vals['responsive'] );
-		$vals['bundled-widgets'] = ! empty( $vals['bundled-widgets'] );
 
 		return $vals;
 	}
