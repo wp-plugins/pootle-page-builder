@@ -44,7 +44,7 @@ jQuery(function ($) {
                 var overlay = $('<div class="ppb-panels ui-widget-overlay ui-widget-overlay ui-front"></div>').css('z-index', 80001);
                 $t.data('overlay', overlay).closest('.ui-dialog').before(overlay);
 
-                window.setRowOptionUploadButton();
+                window.setRowOptionUploadButton($('#grid-styles-dialog'));
 
                 var $bgToggle = $t.find('[data-style-field=background_toggle]'),
                     $bgVidFlds = $t.find('[data-style-field=bg_video]');
@@ -119,22 +119,6 @@ jQuery(function ($) {
             .closest('p').find('a').click(function () {
                 $('#grid-styles-dialog').dialog("option", "position", "center");
             });
-        $('#grid-styles-dialog div[data-style-field-type="slider"]').each(function() {
-            var $t = $(this),
-                $f = $t.siblings('input'),
-                $spn = $(this).siblings('.slider-val');
-                $spn.text(($f.val() * 100) + '%');
-            $t.slider({
-                min: 0,
-                max: 1,
-                step: 0.05,
-                value: $f.val(),
-                slide: function (e, ui) {
-                    $f.val(ui.value);
-                    $spn.text(Math.round(ui.value * 100) + '%');
-                }
-            });
-        });
     }
 
     panels.rowBgToggle = function () {

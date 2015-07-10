@@ -2,8 +2,8 @@
 /*
 Plugin Name: Pootle Page Builder
 Plugin URI: http://pootlepress.com/
-Description: The aim of pootle page builder is to help you create compelling WordPress pages more easily. We hope you like it.
-Version: 0.1.1
+Description: pootle page builder helps you create compelling WordPress pages more easily. Create stunning pages with full width rows including parallax background images & videos.
+Version: 0.2.0
 Author: PootlePress
 Author URI: http://pootlepress.com/
 License: GPL version 3
@@ -56,7 +56,7 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 	 * @since 0.1.0
 	 */
 	private function constants() {
-		define( 'POOTLEPB_VERSION', '0.1.1' );
+		define( 'POOTLEPB_VERSION', '0.2.0' );
 		define( 'POOTLEPB_BASE_FILE', __FILE__ );
 		define( 'POOTLEPB_DIR', __DIR__ . '/' );
 		define( 'POOTLEPB_URL', plugin_dir_url( __FILE__ ) );
@@ -141,17 +141,28 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 
 		foreach ( $query->posts as $post ) {
 
-			$panel_content = Pootle_Page_Builder_Render_Layout::instance()->panels_render( $post->ID );
-
-			global $pootlepb_inline_css;
-			$panel_style = '<style>' . $pootlepb_inline_css . '</style>';
-
-			$updated_post = array(
-				'ID'           => $post->ID,
-				'post_content' => $panel_style . $panel_content,
-			);
-			wp_update_post( $updated_post );
+			//Put pb content in post
+			$this->pb_post_content( $post );
 		}
+	}
+
+	/**
+	 * Puts pb content in post content
+	 * @param WP_Post $post
+	 * @since 0.1.0
+	 */
+	protected function pb_post_content( $post ) {
+
+		$panel_content = Pootle_Page_Builder_Render_Layout::instance()->panels_render( $post->ID );
+
+		global $pootlepb_inline_css;
+		$panel_style = '<style>' . $pootlepb_inline_css . '</style>';
+
+		$updated_post = array(
+			'ID'           => $post->ID,
+			'post_content' => $panel_style . $panel_content,
+		);
+		wp_update_post( $updated_post );
 	}
 
 	/**
@@ -175,7 +186,8 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 		wp_enqueue_style( 'pootlepage-main-admin', plugin_dir_url( __FILE__ ) . 'css/main-admin.css', array(), POOTLEPB_VERSION );
 
 		if ( $pagenow == 'admin.php' && false !== strpos( filter_input( INPUT_GET, 'page' ), 'page_builder' ) ) {
-			wp_enqueue_script( 'ppb-settings-script', plugin_dir_url( __FILE__ ) . 'js/settings.js', array() );
+			wp_enqueue_script( 'jquery-ui-dialog' );
+			wp_enqueue_script( 'ppb-settings-script', plugin_dir_url( __FILE__ ) . 'js/settings.js', array( 'jquery-ui-dialog' ) );
 			wp_enqueue_style( 'ppb-settings-styles', plugin_dir_url( __FILE__ ) . 'css/settings.css', array() );
 			wp_enqueue_style( 'ppb-option-admin', plugin_dir_url( __FILE__ ) . 'css/option-admin.css', array(), POOTLEPB_VERSION );
 			wp_enqueue_script( 'ppb-option-admin', plugin_dir_url( __FILE__ ) . 'js/option-admin.js', array( 'jquery' ), POOTLEPB_VERSION );

@@ -3,7 +3,7 @@
 Contributors: pootlepress, nickburne
 Plugin Name: pootle page builder
 Plugin URI: http://www.pootlepress.com/page-builder
-Tags: page builder, pagebuilder, pootlepress, pootle page builder, pootlepagebuilder, pootle pagebuilder
+Tags: page builder, pagebuilder, pootlepress, pootle page builder, pootlepagebuilder, pootle pagebuilder, layout, layouts, layout builder, layout customizer, content builder, landing pages, landing page builder
 Author URI: http://www.pootlepress.com
 Author: PootlePress
 Donate link:
@@ -15,7 +15,16 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Description ==
 
-pootle page builder helps you build compelling WordPress pages easily. No more boring, linear, article pages that are as limited as your posts. With pootle page builder you can:
+>Please note: pootle page builder is still in beta & therefore we do not recommend using it for production (live sites). 
+>Please read [this post](http://www.pootlepress.com/2015/07/try-out-the-all-new-pootle-page-builder-in-beta/) on how to report bugs.
+
+= What is pootle page builder? =
+
+pootle page builder helps you build compelling WordPress pages easily. No more boring, linear, article pages that are as limited as your posts. 
+
+= What can I do with pootle page builder? =
+
+With pootle page builder you can:
 
  * Add rows and columns to create the page you want
  * Customize the styles of cells (blocks)
@@ -24,11 +33,24 @@ pootle page builder helps you build compelling WordPress pages easily. No more b
  * Add autoplay background videos to rows
  * Do CSS customizations per cell/block, column or row (for advanced users)
 
-We have made sure the plugin:
+= Is there anything else you can tell me about pootle page builder? =
+
+We have made sure pootle page builder:
 
  * Feels as much like WordPress as possible making it easy to use for site owners.
  * Code is well written & fully optimized for performance.
+ 
+The core version of pootle page builder has amazing features such as parallax and video backgrounds for row, but we will also be releasing some add-ons soon such as:
 
+ * Portfolios - create amazing portfolio pages with stunning hover animations
+ * WooCommerce - integrates page builder deeply into WooCommerce product pages, WooCommerce tab manager and more.
+ * Photography - will give you power to add stunning fitlers and effects to your images.
+
+We would love to hear any more add-ons you think would be useful.
+
+= Can I see pootle page builder in action? =
+ 
+ Yes! Watch this video.
 [vimeo http://vimeo.com/131757773]
 
 == Usage ==
@@ -75,6 +97,24 @@ We encourage everyone to contribute their ideas, thoughts and code snippets. Thi
 * Initial release. It's alive!
 
 == Changelog ==
+
+= 0.2.0 =
+* 2015-07-10
+ * Tweak - improved column gutter settings
+ * Tweak - add slider field type to content edit panel
+ * Tweak - global function pootlepb_stringify_attributes
+ * Tweak - hard uninstall ( deleting pb data ) now a choice not compulsion
+ * Tweak - content edit panel and row settings panel tabbing fields now based on index of tab
+ * Tweak - content edit panel and row settings panel allow tabbing with priority settings
+ * Tweak - content block attributes now filtered by pootlepb_content_block_attributes
+ * Tweak - smart titles can now be changed by pootlepb_admin_content_block_title event on html
+ * Tweak - content edit panel tabs now filtered by pootlepb_content_block_tabs
+ * Tweak - content edit panel fields filtered by pootlepb_content_block_fields support new 'tab' key
+ * Tweak - dynamic action hooks for content edit panel tabs pootlepb_content_block_{$tab}_tab
+ * Tweak - row settings panel tabs now filtered by pootlepb_row_settings_tabs
+ * Tweak - row settings panel fields filtered by pootlepb_row_settings_fields support new 'tab' key
+ * Tweak - dynamic action hooks for row settings panel tabs pootlepb_row_settings_{$tab}_tab
+ * Fix - WooCommerce Products item in main nav disappearing
 
 = 0.1.1 =
 * 2015-07-08

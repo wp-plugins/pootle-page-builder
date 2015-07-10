@@ -1,16 +1,16 @@
 (function ($) {
 
-    window.setRowOptionUploadButton = function () {
+    window.setRowOptionUploadButton = function ( $this ) {
 
         /* Removing existing event handlers */
-        $('#grid-styles-dialog .upload-button').off('click');
-        $('#grid-styles-dialog .video-upload-button').off('click');
+        $this.find('.upload-button').off('click');
+        $this.find('.video-upload-button').off('click');
 
         // Uploading Fields aka media selection
         var ppbFileFrame,
             ppbMP4VideoFrame,
             ppbWebmVidFrame;
-        $('#grid-styles-dialog .upload-button').on('click', function (event) {
+        $this.find('.upload-button').on('click', function (event) {
             event.preventDefault();
 
             $textField = $(this).siblings('input');
@@ -43,7 +43,7 @@
             ppbFileFrame.open();
         });
 
-        $('#grid-styles-dialog .video-upload-button').on('click', function (event) {
+        $this.find('.video-upload-button').on('click', function (event) {
             event.preventDefault();
 
             $textField = $(this).siblings('input');
@@ -79,6 +79,23 @@
 
             // Finally, open the modal
             ppbMP4VideoFrame.open();
+        });
+
+        $this.find('.ppb-slider').each(function() {
+            var $t = $(this),
+                $f = $t.siblings('input'),
+                $spn = $(this).siblings('.slider-val');
+            $spn.text(($f.val() * 100) + '%');
+            $t.slider({
+                min: 0,
+                max: 1,
+                step: 0.05,
+                value: $f.val(),
+                slide: function (e, ui) {
+                    $f.val(ui.value);
+                    $spn.text(Math.round(ui.value * 100) + '%');
+                }
+            });
         });
 
     };
