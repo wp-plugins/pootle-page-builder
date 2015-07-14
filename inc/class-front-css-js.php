@@ -7,7 +7,7 @@
  * Time: 11:32 PM
  * @since 0.1.0
  */
-final class Pootle_Page_Builder_Front_Css_Js extends Pootle_Page_Builder_Abstract {
+final class Pootle_Page_Builder_Front_Css_Js {
 	/**
 	 * @var Pootle_Page_Builder_Front_Css_Js
 	 * @access protected
@@ -22,7 +22,7 @@ final class Pootle_Page_Builder_Front_Css_Js extends Pootle_Page_Builder_Abstrac
 	 * Magic __construct
 	 * @since 0.1.0
 	 */
-	protected function __construct() {
+	public function __construct() {
 		$this->hooks();
 	}
 
@@ -112,7 +112,10 @@ final class Pootle_Page_Builder_Front_Css_Js extends Pootle_Page_Builder_Abstrac
 		$this->css( $panel_grid_cell_css, '.panel-grid-cell' );
 
 		$this->css( 'font-size: 0;', '.panel-grid-cell-container' );
-
+		$this->css( 'font-size: initial;', '.panel-grid-cell-container > *' );
+		$this->css( 'position: relative;', '.panel-row-style, .panel-grid-cell-container' );
+		$this->css( 'z-index: 1;', '.panel-grid-cell-container' );
+		$this->css( 'position: absolute;width: 100%;height: 100%;content: "";top: 0;left: 0;z-index: 0;', '.panel-row-style:before' );
 	}
 
 	/**
@@ -274,5 +277,5 @@ final class Pootle_Page_Builder_Front_Css_Js extends Pootle_Page_Builder_Abstrac
 	}
 }
 
-//Instantiating Pootle_Page_Builder_Front_Css_Js class
-Pootle_Page_Builder_Front_Css_Js::instance();
+/** @var Pootle_Page_Builder_Front_Css_Js Instance */
+$GLOBALS['Pootle_Page_Builder_Front_Css_Js'] = new Pootle_Page_Builder_Front_Css_Js();

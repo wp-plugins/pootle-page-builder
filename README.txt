@@ -9,7 +9,7 @@ Author: PootlePress
 Donate link:
 Requires at least: 4.1.0
 Tested up to: 4.2.2
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -97,6 +97,13 @@ We encourage everyone to contribute their ideas, thoughts and code snippets. Thi
 * Initial release. It's alive!
 
 == Changelog ==
+
+= 0.2.1 =
+* 2015-07-14
+ * Tweak - improve content display when plugin de-activated
+ * Tweak - more PHP 5.2.4 support
+ * Fix - disable parallax for mobile devices to fix freezing pages on iOS
+ * Fix - errors caused by servers running PHP 5.2.4
 
 = 0.2.0 =
 * 2015-07-10

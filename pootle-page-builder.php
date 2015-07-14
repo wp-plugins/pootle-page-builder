@@ -2,23 +2,19 @@
 /*
 Plugin Name: Pootle Page Builder
 Plugin URI: http://pootlepress.com/
-Description: pootle page builder helps you create compelling WordPress pages more easily. Create stunning pages with full width rows including parallax background images & videos.
-Version: 0.2.0
+Description: pootle page builder helps you create stunning pages with full width rows including parallax background images & videos.
+Version: 0.2.1
 Author: PootlePress
 Author URI: http://pootlepress.com/
 License: GPL version 3
 */
 
-/** Include PPB abstract class */
-require_once 'inc/class-abstract.php';
-
 /**
  * Pootle Page Builder admin class
  * Class Pootle_Page_Builder_Public
- * Use Pootle_Page_Builder::instance() to get an instance
  * @since 0.1.0
  */
-final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
+final class Pootle_Page_Builder {
 
 	/**
 	 * @var Pootle_Page_Builder instance of Pootle_Page_Builder
@@ -45,7 +41,7 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 	 * Magic __construct
 	 * @since 0.1.0
 	 */
-	protected function __construct() {
+	public function __construct() {
 		$this->constants();
 		$this->includes();
 		$this->hooks();
@@ -56,9 +52,9 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 	 * @since 0.1.0
 	 */
 	private function constants() {
-		define( 'POOTLEPB_VERSION', '0.2.0' );
+		define( 'POOTLEPB_VERSION', '0.2.1' );
 		define( 'POOTLEPB_BASE_FILE', __FILE__ );
-		define( 'POOTLEPB_DIR', __DIR__ . '/' );
+		define( 'POOTLEPB_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'POOTLEPB_URL', plugin_dir_url( __FILE__ ) );
 		// Tracking presence of version older than 3.0.0
 		if ( - 1 == version_compare( get_option( 'pootlepb_initial_version' ), '2.5' ) ) {
@@ -80,12 +76,20 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 		require_once POOTLEPB_DIR . 'inc/enhancements-and-fixes.php';
 		/** PPB Admin Class */
 		require_once POOTLEPB_DIR . 'inc/class-admin.php';
-		/** Instantiating PPB Admin Class */
-		$this->admin = Pootle_Page_Builder_Admin::instance();
+		/**
+		 * PPB Admin Class Instance
+		 * @var Pootle_Page_Builder_Admin Instance
+		 */
+		$GLOBALS['Pootle_Page_Builder_Admin'] = new Pootle_Page_Builder_Admin();
+		$this->admin = $GLOBALS['Pootle_Page_Builder_Admin'];
 		/** PPB Public Class */
 		require_once POOTLEPB_DIR . 'inc/class-public.php';
-		/** Instantiating PPB Public Class */
-		$this->public = Pootle_Page_Builder_Public::instance();
+		/**
+		 * PPB Public Class Instance
+		 * @var Pootle_Page_Builder_Public Instance
+		 */
+		$GLOBALS['Pootle_Page_Builder_Public'] = new Pootle_Page_Builder_Public();
+		$this->public = $GLOBALS['Pootle_Page_Builder_Public'];
 	}
 
 	/**
@@ -153,7 +157,7 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 	 */
 	protected function pb_post_content( $post ) {
 
-		$panel_content = Pootle_Page_Builder_Render_Layout::instance()->panels_render( $post->ID );
+		$panel_content = $GLOBALS['Pootle_Page_Builder_Render_Layout']->panels_render( $post->ID );
 
 		global $pootlepb_inline_css;
 		$panel_style = '<style>' . $pootlepb_inline_css . '</style>';
@@ -231,4 +235,4 @@ final class Pootle_Page_Builder extends Pootle_Page_Builder_Abstract {
 } //class Pootle_Page_Builder
 
 //Instantiating Pootle_Page_Builder
-Pootle_Page_Builder::instance();
+new Pootle_Page_Builder();
