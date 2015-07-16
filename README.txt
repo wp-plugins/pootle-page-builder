@@ -9,7 +9,7 @@ Author: PootlePress
 Donate link:
 Requires at least: 4.1.0
 Tested up to: 4.2.2
-Stable tag: 0.2.1
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -97,6 +97,14 @@ We encourage everyone to contribute their ideas, thoughts and code snippets. Thi
 * Initial release. It's alive!
 
 == Changelog ==
+
+= 0.2.2 =
+* 2015-07-16
+ * Fix - scrolling not working on mobile browsers
+ * Fix - background video not working in some themes
+ * Fix - editor not working in firefox
+ * Fix - background video not autoplaying in safari
+ * Fix - add media function now working correctly
 
 = 0.2.1 =
 * 2015-07-14
