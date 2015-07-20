@@ -253,10 +253,10 @@ final class Pootle_Page_Builder_Content_Block {
 			array(
 				'textarea_name'  => 'widgets[{$id}][text]',
 				'default_editor' => 'tmce',
-				'editor_height' => 500,
+				'editor_height' => 400,
 				'tinymce'        => array(
 					'force_p_newlines' => false,
-					'height' => 500,
+					'height' => 400,
 				)
 			)
 		);
@@ -291,10 +291,13 @@ final class Pootle_Page_Builder_Content_Block {
 	 * @since 0.1.0
 	 */
 	public function add_wc_tab( $tabs ) {
-		$tabs['woocommerce'] = array(
-			'label' => 'Woocommerce',
-			'priority' => 2,
-		);
+
+		if( class_exists( 'WooCommerce' ) ) {
+			$tabs['woocommerce'] = array(
+				'label'    => 'Woocommerce',
+				'priority' => 2,
+			);
+		}
 		return $tabs;
 	}
 
