@@ -29,7 +29,6 @@ final class Pootle_Page_Builder_Admin_UI {
 		add_action( 'admin_print_styles-post.php', array( $this, 'enqueue_scripts' ) );
 		add_filter( 'pootlepb_prebuilt_layouts', array( $this, 'cloned_page_layouts' ) );
 		add_action( 'wp_ajax_so_panels_prebuilt', array( $this, 'ajax_action_prebuilt' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'dequeue_conflicting_scripts' ), 16 );
 
 	}
 
@@ -67,10 +66,12 @@ final class Pootle_Page_Builder_Admin_UI {
 	public function enqueue_styles() {
 		$screen = get_current_screen();
 		if ( in_array( $screen->id, pootlepb_settings( 'post-types' ) ) ) {
+			wp_enqueue_script( 'pootlepb-ui' );
+			wp_enqueue_style( 'pootlepb-ui-styles' );
 			wp_enqueue_style( 'pootlepb-admin', POOTLEPB_URL . 'css/admin.css', array(), POOTLEPB_VERSION );
 			wp_enqueue_style( 'ppb-chosen-style', POOTLEPB_URL . 'js/chosen/chosen.css' );
 			wp_enqueue_style( 'wp-jquery-ui-dialog' );
-			do_action( 'siteorigin_panel_enqueue_admin_styles' );
+			do_action( 'pootlepb_enqueue_admin_styles' );
 		}
 	}
 
@@ -109,7 +110,7 @@ final class Pootle_Page_Builder_Admin_UI {
 		global $pootlepb_ui_js_deps;
 
 		//UI Scripts
-		wp_enqueue_script( 'pootlepb-ui-dialog', POOTLEPB_URL . 'js/ui.dialog.js', POOTLEPB_VERSION );
+		wp_enqueue_script( 'pootlepb-ui', POOTLEPB_URL . 'js/ui.dialog.js', POOTLEPB_VERSION );
 		wp_enqueue_script( 'pootlepb-ui-admin', POOTLEPB_URL . 'js/ui.admin.js', $pootlepb_ui_js_deps, POOTLEPB_VERSION );
 		wp_enqueue_script( 'pootlepb-ui-admin-sticky', POOTLEPB_URL . 'js/ui.admin.sticky.js', array( 'jquery', ), POOTLEPB_VERSION );
 		wp_enqueue_script( 'pootlepb-ui-admin-panels', POOTLEPB_URL . 'js/ui.admin.panels.js', array( 'jquery', ), POOTLEPB_VERSION );
@@ -118,7 +119,7 @@ final class Pootle_Page_Builder_Admin_UI {
 		wp_enqueue_script( 'pootlepb-ui-admin-tooltip', POOTLEPB_URL . 'js/ui.admin.tooltip.min.js', array( 'jquery', ), POOTLEPB_VERSION );
 		wp_enqueue_script( 'pootlepb-ui-admin-media', POOTLEPB_URL . 'js/ui.admin.media.min.js', array( 'jquery', ), POOTLEPB_VERSION );
 		wp_enqueue_script( 'pootlepb-ui-admin-styles', POOTLEPB_URL . 'js/ui.admin.styles.js', array( 'jquery', ), POOTLEPB_VERSION );
-		wp_enqueue_script( 'pootlepb-ui-admin-media-buttons', POOTLEPB_URL . 'js/ui.admin.media-buttons.js', array( 'jquery', ) );
+		wp_enqueue_script( 'pootlepb-ui-admin-media-buttons', POOTLEPB_URL . 'js/ui.admin.fields-handler.js', array( 'jquery', ) );
 	}
 
 	/**
@@ -139,19 +140,8 @@ final class Pootle_Page_Builder_Admin_UI {
 		wp_enqueue_style( 'wp-color-picker' );
 
 		wp_enqueue_script( 'pootlepb-ui-undomanager', POOTLEPB_URL . 'js/ui.admin.undomanager.min.js', array( 'jquery', ), POOTLEPB_VERSION );
-		wp_enqueue_script( 'pootlepb-chosen', POOTLEPB_URL . 'js/chosen/chosen.jquery.min.min.js', array( 'jquery' ), POOTLEPB_VERSION );
+		wp_enqueue_script( 'pootlepb-chosen', POOTLEPB_URL . 'js/chosen/chosen.jquery.min.js', array( 'jquery' ), POOTLEPB_VERSION );
 
-	}
-
-	/**
-	 * Dequeues the conflicting scripts and styles
-	 */
-	public function dequeue_conflicting_scripts() {
-		$screen = get_current_screen();
-
-		if ( in_array( $screen->id, pootlepb_settings( 'post-types' ) ) ) {
-			wp_dequeue_style( 'jquery-ui-datepicker' );
-		}
 	}
 
 	/**

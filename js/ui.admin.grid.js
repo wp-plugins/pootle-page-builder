@@ -108,18 +108,28 @@
         container
             .append(
             $('<div class="controls" />')
-                // Add the move/reorder button
+                // Add the move/reorder area
+                .append(
+                    $('<div class="row-button sort-button grid-handle"></div>')
+                )
                 .append(
                     $('<div class="row-button row-bg-preview sort-button dashicons-before dashicons-visibility"></div>')
                     .attr('data-tooltip', 'Row is hidden')
                 )
+                // Add the add column button
                 .append(
-                    $('<div class="row-button sort-button dashicons-before dashicons-sort grid-handle"></div>')
+                $('<div class="row-button add-col-button dashicons-before dashicons-plus"></div>')
+                    .attr('data-tooltip', 'Add Column')
+                )
+                // Add the remove column button
+                .append(
+                $('<div class="row-button remove-col-button dashicons-before dashicons-minus"></div>')
+                    .attr('data-tooltip', 'Remove Column')
                 )
                 // Add the duplicate button
                 .append(
-                    $('<div class="row-button duplicate-button dashicons-before dashicons-admin-page"></div>')
-                        .attr('data-tooltip', 'Duplicate')
+                $('<div class="row-button duplicate-button dashicons-before dashicons-admin-page"></div>')
+                    .attr('data-tooltip', 'Duplicate')
                 )
                 // Add the button for selecting the row style
                 .append(
@@ -199,6 +209,92 @@
     };
 
     panels.setupGridButtons = function ($gridContainer) {
+
+        $('html').trigger( 'pootlepb_admin_setup_row_buttons', [ $gridContainer ] );
+
+        $gridContainer.find('> .controls > .add-col-button').click(function () {
+
+            var $gridContainer = $(this).closest('.grid-container'),
+                cells = $gridContainer.find('.cell'),
+                numCells = Math.min( 10, cells.length + 1),
+                //Getting old row data
+                $old_inputs = $gridContainer.find('input[type=hidden][name^="grids["]'),
+                //Getting old row bg color
+                bg_color = $old_inputs.filter( '[name$="[style][background]"]').val(),
+                //Creating new row with bg color
+                $newRow = window.panels.createGrid( numCells, null, {background: bg_color} );
+
+            //Updating old column count
+            $old_inputs.filter( '[name$="][cells]"]').val( numCells );
+            //Removing all new row data
+            $newRow.find('input[type=hidden][name^="grids["]').remove();
+            //Putting old row data (with updated column count) in the new row
+            $newRow.prepend($old_inputs);
+
+            for( var y = 0; y < cells.length; y++ ) {
+                var $newCell = $newRow.find('.cell .cell-wrapper').eq(y),
+                    $oldCell = $gridContainer.find('.cell .cell-wrapper').eq(y);
+
+                $newCell.append($oldCell.contents());
+            }
+
+            $newRow.insertAfter($gridContainer);
+            $('.panels-tooltip').remove();
+            $gridContainer.remove();
+            $(window).resize();
+            panels.ppbGridEvents($newRow);
+
+        });
+
+        $gridContainer.find('> .controls > .remove-col-button').click(function () {
+            var $gridContainer = $(this).closest('.grid-container'),
+                cells = $gridContainer.find('.cell'),
+                indexOfCellToRemove = null;
+
+            cells.each( function( i ){
+                if ( $(this).find('.panel').length < 1 ) {
+                    indexOfCellToRemove = i;
+                }
+            });
+
+            if ( null == indexOfCellToRemove ) {
+                $('#no-empty-col-dialog').ppbDialog('open');
+                return;
+            } else if ( 1 == cells.length ) {
+                return;
+            } else {
+                cells.eq(indexOfCellToRemove).remove();
+            }
+
+            var numCells = Math.max( 1, cells.length - 1),
+                //Getting old row data
+                $old_inputs = $gridContainer.find('input[type=hidden][name^="grids["]'),
+                //Getting old row bg color
+                bg_color = $old_inputs.filter( '[name$="[style][background]"]').val(),
+                //Creating new row with bg color
+                $newRow = window.panels.createGrid( numCells, null, {background: bg_color} );
+
+            //Updating old column count
+            $old_inputs.filter( '[name$="][cells]"]').val( numCells );
+            //Removing all new row data
+            $newRow.find('input[type=hidden][name^="grids["]').remove();
+            //Putting old row data (with updated column count) in the new row
+            $newRow.prepend($old_inputs);
+
+            for( var y = 0; y < cells.length - 1; y++ ) {
+                var $newCell = $newRow.find('.cell .cell-wrapper').eq(y),
+                    $oldCell = $gridContainer.find('.cell .cell-wrapper').eq(y);
+
+                $newCell.append($oldCell.contents());
+            }
+
+            $newRow.insertAfter($gridContainer);
+            $('.panels-tooltip').remove();
+            $gridContainer.remove();
+            $(window).resize();
+            panels.ppbGridEvents($newRow);
+
+        });
 
         $gridContainer.find('> .controls > .duplicate-button').click(function () {
 
@@ -310,18 +406,10 @@
 
             var $container = $(this).closest('.grid-container');
 
-            $('#remove-row-dialog').dialog({
+            $('#remove-row-dialog').ppbDialog({
                 dialogClass: 'panels-admin-dialog',
                 autoOpen: true,
-                modal: false, // Disable modal so we don't mess with media editor. We'll create our own overlay.
                 title: $('#remove-row-dialog').attr('data-title'),
-                open: function () {
-                    var overlay = $('<div class="ppb-panels ui-widget-overlay ui-widget-overlay ui-front"></div>').css('z-index', 80001);
-                    $(this).data('overlay', overlay).closest('.ui-dialog').before(overlay);
-                },
-                close: function () {
-                    $(this).data('overlay').remove();
-                },
                 buttons: {
                     Yes: function () {
 
@@ -440,10 +528,10 @@
 
                         panels.checkAddRowButtonColor( true );
 
-                        $(this).dialog('close');
+                        $(this).ppbDialog('close');
                     },
                     Cancel: function () {
-                        $(this).dialog('close');
+                        $(this).ppbDialog('close');
                     }
                 }
 
@@ -452,6 +540,21 @@
 
 
         })
+    };
+
+    panels.gridDataFromGrid = function ($t) {
+        $t.find('input[type=hidden][name^="grids["]').each(function () {
+            var first = 'grids[';
+            var idx = $(this).attr('name').indexOf(']');
+            if (idx >= 0) {
+                var last = $(this).attr('name').substr(idx);
+
+                var newName = first + rowCount + last;
+
+                $(this).attr('name', newName);
+
+            }
+        });
     };
 
     /**
@@ -540,7 +643,7 @@
                 $(this).find('.cell-width-value span').html(Math.round(percent * 1000) / 10 + '%');
             })
             .find('.panels-container')
-            // This sortable handles the widgets inside the cell
+            // Handles the content blocks sorting
             .sortable({
                 placeholder: "ui-state-highlight",
                 connectWith: ".panels-container",
@@ -557,6 +660,13 @@
 
                     // Refresh all the cell sizes after we stop sorting
                     this.lastContainer = thisContainer;
+                },
+                sort: function( e, ui ){
+                    var $target = $(e.target);
+                    if (!/html|body/i.test($target.offsetParent()[0].tagName)) {
+                        var top = e.pageY - $target.offsetParent().offset().top - (ui.helper.outerHeight(true) / 2);
+                        ui.helper.css({'top' : top + 'px'});
+                    }
                 },
                 helper: function (e, el) {
                     return el.clone().css('opacity', panels.animations ? 0.9 : 1).addClass('panel-being-dragged');
@@ -637,11 +747,11 @@
 
         if( $( '#panels-container .grid-container').length < 1 + delay ) {
 
-            $('#add-to-panels  .grid-add').addClass('pootle');
+            $('#add-to-pb-panel  .grid-add').addClass('pootle');
             $('#ppb-hello-user').show();
         } else {
 
-            $('#add-to-panels  .grid-add').removeClass('pootle');
+            $('#add-to-pb-panel  .grid-add').removeClass('pootle');
             $('#ppb-hello-user').hide();
         }
 

@@ -1,5 +1,12 @@
 <?php
 $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
+
+$buttons = array( 'grid-add' => 'Add Row' );
+if ( ! empty( $layouts ) ) {
+	$buttons['prebuilt-set'] = 'Use Existing Page Layout';
+}
+
+$buttons = apply_filters( 'pootlepb_add_to_panel_buttons', $buttons );
 ?>
 
 <div id="panels" data-animations="true">
@@ -9,13 +16,15 @@ $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
 	<div id="panels-container">
 	</div>
 
-	<div id="add-to-panels">
+	<div id="add-to-pb-panel">
 
-		<button class="grid-add add-button ed_button button button-small"><?php _e( 'Add Row', 'ppb-panels' ) ?></button>
-
-		<?php if ( ! empty( $layouts ) ) : ?>
-			<button class="prebuilt-set add-button ed_button button button-small"><?php _e( 'Use Existing Page Layout', 'ppb-panels' ) ?></button>
-		<?php endif; ?>
+	<?php
+		foreach ( $buttons as $id => $name ) { ?>
+			<button class="<?php echo $id ?> add-button ed_button button button-small">
+				<?php _e( $name, 'ppb-panels' ) ?>
+			</button>
+		<?php }
+	?>
 
 		<div class="clear"></div>
 	</div>
@@ -49,11 +58,9 @@ $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
 		$visit_count = get_user_meta( $current_user->ID, 'pootlepb_visit_count', true );
 
 		//Set welcome message
-		if ( empty( $visit_count ) ) {
-
+		if ( empty( $visit_count ) || empty( $layouts ) ) {
 			$visit_count = 0;
 			$message = "Welcome to Page Builder{$username}! Click the 'Add Row' button above to start building your page.";
-
 		} elseif ( 1 == $visit_count ) {
 			$message = "Welcome back to Page Builder{$username}! You can now also use existing pages as a template to start your page and save you time!";
 		} else {
@@ -61,7 +68,11 @@ $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
 		}
 
 		//Print the message
-		echo "<div id='ppb-hello-user' class='visit-count-" . esc_attr( $visit_count ) . "'> " . esc_html( $message ) . " </div>";
+		echo apply_filters( 'pootlepb_welcome_message',
+			"<div id='ppb-hello-user' class='visit-count-" . esc_attr( $visit_count ) . "'> " .
+			esc_html( $message ) .
+			"</div>" ,
+			$current_user, $visit_count );
 
 		//Update user visit count
 		$visit_count++;
@@ -111,10 +122,6 @@ $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
 			<?php require POOTLEPB_DIR . 'tpl/row-settings-panel.php'; ?>
 	</div>
 
-	<div id="widget-styles-dialog" data-title="Style Widget" class="panels-admin-dialog">
-		<?php pootlepb_block_dialog_fields_output() ?>
-	</div>
-
 	<div id="content-loss-dialog" data-title="<?php esc_attr_e( 'Changing to Page Builder', 'ppb-panels' ) ?>"
 	     data-button-i-know="<?php esc_attr_e( "I know what I'm doing", 'ppb-panels' ) ?>"
 	     data-button-stop="<?php esc_attr_e( "Yep, I'll stop and create a new page", 'ppb-panels' ) ?>"
@@ -133,6 +140,13 @@ $layouts = apply_filters( 'pootlepb_prebuilt_layouts', array() );
 	     class="panels-admin-dialog">
 		<p>
 			<?php _e( "Ummm... if you go back to the default editor you'll loose all your content. Are you sure you want to loose all that hard work you've done?", 'ppb-panels' ) ?>
+		</p>
+	</div>
+	<div id="no-empty-col-dialog"
+	     data-title="<?php esc_attr_e( 'No empty column found', 'ppb-panels' ) ?>"
+	     class="panels-admin-dialog">
+		<p>
+			<?php _e( "You can only remove an empty column, please move or delete content from the column you wish to remove.", 'ppb-panels' ) ?>
 		</p>
 	</div>
 

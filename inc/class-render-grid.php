@@ -30,7 +30,12 @@ class Pootle_Page_Builder_Render_Grid {
 		echo '<div id="pootle-page-builder" >';
 		foreach ( $grids as $gi => $cells ) {
 
-			echo apply_filters( 'pootlepb_before_row', '', $panels_data['grids'][ $gi ] );
+			/**
+			 * Triggered before rendering the row
+			 * Allows other themes and plugins to add html before the row
+			 * @param array $data Grid data
+			 */
+			echo do_action( 'pootlepb_before_row', $panels_data['grids'][ $gi ] );
 
 			$rowID = 'pg-' . $post_id . '-' . $gi;
 
@@ -47,8 +52,12 @@ class Pootle_Page_Builder_Render_Grid {
 			echo '</div><!--.panel-row-style-->';
 			echo '</div><!--.panel-grid-->';
 
-			// This allows other themes and plugins to add html after the row
-			echo apply_filters( 'pootlepb_after_row', '', $panels_data['grids'][ $gi ] );
+			/**
+			 * Triggered after rendering the row
+			 * Allows other themes and plugins to add html after the row
+			 * @param array $data Grid data
+			 */
+			echo do_action( 'pootlepb_after_row', $panels_data['grids'][ $gi ] );
 		}
 		echo '</div>';
 	}
@@ -62,7 +71,17 @@ class Pootle_Page_Builder_Render_Grid {
 	 */
 	private function get_row_attributes( $gi, $rowID, $panels_data ) {
 
+		/**
+		 * Filters row classes
+		 * @param array $classes
+		 * @param array $row_data
+		 */
 		$grid_classes    = apply_filters( 'pootlepb_row_classes', array( 'panel-grid' ), $panels_data['grids'][ $gi ] );
+		/**
+		 * Filters row attributes
+		 * @param array $attributes
+		 * @param array $row_data
+		 */
 		$grid_attributes = apply_filters( 'pootlepb_row_attributes', array(
 			'class' => implode( ' ', $grid_classes ),
 			'id'    => $rowID
@@ -86,7 +105,7 @@ class Pootle_Page_Builder_Render_Grid {
 		echo '<div ' . $this->get_row_style_attributes( $gi, $styleArray, $cells, $panels_data ) . '>';
 
 		/**
-		 * Fires in pootle page builder row
+		 * Fires in row before the cells are rendered
 		 * @hooked Pootle_Page_Builder_Render_Layout::row_bg_video
 		 * @hooked Pootle_Page_Builder_Render_Layout::row_embed_css
 		 */
@@ -113,6 +132,11 @@ class Pootle_Page_Builder_Render_Grid {
 			$panels_data['grids'][ $gi ]['style']['class'],
 		);
 
+		/**
+		 * Filters row style container attributes
+		 * @param array $attributes
+		 * @param array $row_data
+		 */
 		$style_attributes = apply_filters( 'pootlepb_row_style_attributes', $style_attributes, $styleArray, $cells );
 
 		return pootlepb_stringify_attributes( $style_attributes );
@@ -248,7 +272,7 @@ class Pootle_Page_Builder_Render_Grid {
 		if ( isset( $style['background'] ) && ! empty( $style['bg_overlay_color'] ) ) {
 			$overlay_color = $style['bg_overlay_color'];
 			if ( ! empty( $style['bg_overlay_opacity'] ) ) {
-				$overlay_color = 'rgba( ' . pootlepb_hex2rgb( $overlay_color ) . ", {$style['bg_overlay_opacity']} )";
+				$overlay_color = 'rgba( ' . pootlepb_hex2rgb( $overlay_color ) . ', ' . ( 1 - $style['bg_overlay_opacity'] ) . ' )';
 			}
 			$css .= "$rowID .panel-row-style:before { background-color: $overlay_color; }";
 		}

@@ -15,15 +15,15 @@ global $pootlepb_content_block_tabs;
  *		'priority' => 10,
  *	),
  */
-$pootlepb_content_block_tabs = apply_filters( 'pootlepb_content_block_tabs', $pootlepb_content_block_tabs );
 
-$panel_tabs = array();
+$add_on_tabs = apply_filters( 'pootlepb_content_block_tabs', array() );
 
-foreach ( $pootlepb_content_block_tabs as $k => $tab ) {
-	if ( empty( $tab['priority'] ) ) {
-		$tab['priority'] = 10;
-	}
-	$panel_tabs[ $tab['priority'] ][ $k ] = $tab;
+$panel_tabs = array(
+	'-' => $pootlepb_content_block_tabs
+);
+
+foreach ( $add_on_tabs as $k => $tab ) {
+	$panel_tabs[ $tab['label'] ][ $k ] = $tab;
 }
 
 ksort( $panel_tabs );
@@ -63,8 +63,9 @@ ksort( $panel_tabs );
 				<div id="pootle-<?php echo $k; ?>-tab" class="tab-contents pootle-style-fields <?php echo $tab['class']; ?>">
 
 					<?php
-					do_action( 'pootlepb_content_block_' . $k . '_tab', $request );
+					do_action( "pootlepb_content_block_{$k}_tab", $request );
 					pootlepb_block_dialog_fields_output( $k );
+					do_action( "pootlepb_content_block_{$k}_tab_after_fields", $request );
 					?>
 
 				</div>

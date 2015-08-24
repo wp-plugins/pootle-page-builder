@@ -179,6 +179,8 @@
 
     panels.setupPanelButtons = function ($panel) {
 
+        $('html').trigger( 'pootlepb_admin_setup_content_block_buttons', [ $panel ] );
+
         $panel.find('> .panel-wrapper > .title > h4').click(function () {
             $(this).closest('.panel').find('a.edit').click();
             return false;
@@ -222,15 +224,15 @@
                     .data('widget-type', type)
                     .keypress(function (e) {
                         if (e.keyCode == $.ui.keyCode.ENTER) {
-                            if ($(this).closest('.ui-dialog').find('textarea:focus').length > 0) return;
+                            if ($(this).closest('.ppb-dialog').find('textarea:focus').length > 0) return;
 
                             // This is the same as clicking the add button
-                            $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .ui-button:eq(0)').click();
+                            $(this).closest('.ppb-dialog').find('.ui-dialog-buttonpane .ui-button:eq(0)').click();
                             e.preventDefault();
                             return false;
                         }
                         else if (e.keyCode === $.ui.keyCode.ESCAPE) {
-                            $(this).closest('.ui-dialog').dialog('close');
+                            $(this).closest('.ppb-dialog').ppbDialog('close');
                         }
                     });
 
@@ -248,11 +250,17 @@
                 var newPanelId = $currentPanel.find('> input[name$="[info][id]"]').val(),
                     panelHeight, $edi_ifr, ediGutterHeight, editor, name;
 
-                var overlay = $('<div class="ppb-panels-ui-widget-overlay ui-widget-overlay ui-front"></div>').css('z-index', 80001)
+                var overlay = $('<div class="ppb-widget-overlay ui-front"></div>').css('z-index', 80001);
 
-                activeDialog.css({display: "block", 'opacity':0}).data('overlay', overlay).before( overlay );
+                activeDialog.css({
+                    display: "block",
+                    top: $(window).scrollTop(),
+                    height: window.innerHeight - 64,
+                    width: window.innerWidth - 64,
+                    'opacity':0
+                }).data('overlay', overlay).before( overlay );
 
-                panelHeight = activeDialog.height() - ( activeDialog.find('.ui-dialog-titlebar').outerHeight() + activeDialog.find('.ui-dialog-buttonpane').outerHeight() );
+                panelHeight = activeDialog.height() - ( activeDialog.find('.ppb-dialog-titlebar').outerHeight() + activeDialog.find('.ppb-dialog-buttonpane').outerHeight() );
 
                 activeDialog.find('.panel-dialog').css('height', panelHeight);
 
@@ -271,32 +279,25 @@
                 content = tinyMCE.get('ppbeditor').setContent( text );
 
                 //Add events to the editor buttons
-                panels.ppbEditorButtonEvents();
+                panels.ppbEditorPanelButtonEvents();
 
-                $('.ppb-add-content-panel')
-                    .tabs({
+                var $add_content_panel =  $('.ppb-add-content-panel');
+
+                $add_content_panel
+                    .ppbTabs({
                         activate: function (e, ui) {
                             var $t = $(this),
-                                title = $t.find('.ui-tabs-active a').html(),
+                                title = $t.find('.ppb-tabs-active a').html(),
                                 $target = $(e.toElement);
-                            $('.ppb-add-content-panel .ui-dialog-titlebar .ui-dialog-title').html(title);
-
-                            //panels.ppbContentModule( e, ui, $t, $currentPanel );
+                            $('.ppb-add-content-panel .ppb-dialog-titlebar .ppb-dialog-title').html(title);
                         },
                         active: 0
                     })
-                    .addClass("ui-tabs-vertical ui-helper-clearfix")
-                    .find('input[data-style-field-type="color"]').each(function() {
-                        $t = $(this);
-                        var wpPkrContnr = $t.closest('.wp-picker-container');
-                        if ( wpPkrContnr.length == 0 ) {
-                            $t.wpColorPicker();
-                        }
-                    });
+                    .addClass("ui-tabs-vertical ui-helper-clearfix");
 
-                panels.addInputFieldEventHandlers($('.ppb-add-content-panel'));
+                panels.addInputFieldEventHandlers($add_content_panel);
 
-                var $t = $('.ppb-add-content-panel'),
+                var $t = $add_content_panel,
                     title = $t.find('.ui-tabs-active a').html();
                 $('.ppb-add-content-panel .ui-dialog-titlebar .ui-dialog-title').html(title);
 
@@ -313,6 +314,8 @@
                 $(document).trigger('panelssetup', $currentPanel, activeDialog);
                 $('#panels-container .panels-container').trigger('refreshcells');
 
+                $('html').trigger( 'pootlepb_admin_editor_panel_done', [ $add_content_panel ] );
+
                 // This gives panel types a chance to influence the form
                 activeDialog.removeClass('ui-dialog-content-loading').trigger('panelsopen', $currentPanel, activeDialog);
             } else {
@@ -322,18 +325,18 @@
                     .data('widget-type', type)
                     .addClass('ui-dialog-content-loading')
                     .addClass('widget-dialog-' + type.toLowerCase())
-                    .dialog(panels.block_editor_dialog_properties)
+                    .ppbDialog(panels.block_editor_dialog_properties)
                     .keypress(function (e) {
                         if (e.keyCode == $.ui.keyCode.ENTER) {
-                            if ($(this).closest('.ui-dialog').find('textarea:focus').length > 0) return;
+                            if ($(this).closest('.ppb-dialog').find('textarea:focus').length > 0) return;
 
                             // This is the same as clicking the add button
-                            $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane .ui-button:eq(0)').click();
+                            $(this).closest('.ppb-dialog').find('.ui-dialog-buttonpane .ui-button:eq(0)').click();
                             e.preventDefault();
                             return false;
                         }
                         else if (e.keyCode === $.ui.keyCode.ESCAPE) {
-                            $(this).closest('.ui-dialog').dialog('close');
+                            $(this).closest('.ppb-dialog').ppbDialog('close');
                         }
                     });
 
@@ -356,11 +359,11 @@
 
                         activeDialog
                             .html(result)
-                            .dialog("option", "position", {my: "center", at: "center", of: window})
-                            .dialog("open");
+                            .ppbDialog("option", "position", {my: "center", at: "center", of: window})
+                            .ppbDialog("open");
 
                         $('.ppb-add-content-panel')
-                            .tabs({
+                            .ppbTabs({
                                 activate: function (e, ui) {
                                     var $t = $(this),
                                         title = $t.find('.ui-tabs-active a').html(),
@@ -433,35 +436,13 @@
             return false;
         });
 
-        $panel.find('> .panel-wrapper > .title > .actions > .style').click(function () {
-
-            var $currentPanel = $(this).closest('.panel');
-
-            // style dialog
-            if (typeof activeDialog != 'undefined') return false;
-
-            window.$currentPanel = $currentPanel;
-
-            $('#widget-styles-dialog').dialog('open');
-
-            return false;
-        });
-
         $panel.find('> .panel-wrapper > .title > .actions > .delete').click(function () {
             var $currentPanel = $(this).closest('.panel');
 
-            $('#remove-widget-dialog').dialog({
+            $('#remove-widget-dialog').ppbDialog({
                 dialogClass: 'panels-admin-dialog',
                 autoOpen: false,
-                modal: false, // Disable modal so we don't mess with media editor. We'll create our own overlay.
                 title: $('#remove-widget-dialog').attr('data-title'),
-                open: function () {
-                    var overlay = $('<div class="ppb-panels ui-widget-overlay ui-widget-overlay ui-front"></div>').css('z-index', 80001);
-                    $(this).data('overlay', overlay).closest('.ui-dialog').before(overlay);
-                },
-                close: function () {
-                    $(this).data('overlay').remove();
-                },
                 buttons: {
                     Yes: function () {
 
@@ -511,16 +492,16 @@
 
                         deleteFunction($currentPanel);
 
-                        $(this).dialog('close');
+                        $(this).ppbDialog('close');
                     },
                     Cancel: function () {
-                        $(this).dialog('close');
+                        $(this).ppbDialog('close');
                     }
                 }
 
             });
 
-            $('#remove-widget-dialog').dialog('open');
+            $('#remove-widget-dialog').ppbDialog('open');
 
             return false;
         });
@@ -724,13 +705,20 @@
         var $styleDataField = window.$currentPanel.find('input[name$="[style]"]');
         var json = $styleDataField.val();
         var styleData = JSON.parse(json);
-
         // by default, set checkbox to unchecked,
         // so when a widget has no saved checkbox setting, and widget styling dialog is display,
         // it will be set to unchecked,
         // this is to set hide widget title checkbox
         $styleForm.find('input[type=checkbox]').prop('checked', false);
-        $styleForm.find('input[type=text], input[type=number], textarea').val('').change();
+
+        $styleForm.find('input[type=text], input[type=hidden], select, input[type=number], textarea')
+            .val('')
+            .change()
+            .trigger('chosen:updated');
+
+        $styleForm.find(':radio[value=""]')
+            .prop('checked', true)
+            .change();
 
         // from style data in hidden field, set the widget style dialog fields with data
         for (var key in styleData) {
@@ -740,6 +728,11 @@
 
                 if ($field.attr('data-style-field-type') == "color" ) {
                     $field.wpColorPicker('color', styleData[key]);
+                } else if ($field.attr('data-style-field-type') == "slider" ) {
+                    $field.siblings('.ppb-slider').slider('value',styleData[key]);
+                } else if ($field.attr('data-style-field-type') == "radio" ) {
+                    console.log(styleData[key]);
+                    $field.filter('[value="' + styleData[key] + '"]').prop('checked', true);
                 } else if ($field.attr('data-style-field-type') == "checkbox") {
                     if (styleData[key] == $field.val()) {
                         $field.prop('checked', true);
@@ -749,6 +742,7 @@
                 } else {
                     $field.val(styleData[key]);
                 }
+                $field.change().trigger('chosen:updated');
 
             }
         }
@@ -761,45 +755,40 @@
         // from values in dialog fields, set style data into hidden fields
         var styleData = {};
         $styleForm.find('[dialog-field]').each(function () {
-            var $t = $(this);
+            var $t = $(this),
+                key = $t.attr('dialog-field'),
+                type = $t.attr('type');
 
-            if ($t.attr('type') == 'checkbox') {
-                // if the field is checkbox, only store value if it is checked
+            if ( type == 'checkbox' || type == 'radio') {
                 if ($t.prop('checked')) {
-                    var key = $t.attr('dialog-field');
                     styleData[key] = $t.val();
                 }
             } else {
-                var key = $t.attr('dialog-field');
                 styleData[key] = $t.val();
             }
 
         });
 
         $currentPanel.find('input[name$="[style]"]').val(JSON.stringify(styleData));
+
+        return styleData;
     };
 
     panels.block_editor_dialog_properties = {
         dialogClass: 'panels-admin-dialog ppb-add-content-panel ppb-cool-panel-container',
         autoOpen: false,
-        modal: false, // Disable modal so we don't mess with media editor. We'll create our own overlay.
         draggable: false,
         resizable: false,
         title: "Editor",
         height: $(window).height() - 50,
         width: $(window).width() - 50,
         create: function (event, ui) {
-            $(this).closest('.ui-dialog').find('.show-in-panels').show();
+            $(this).closest('.ppb-dialog').find('.show-in-panels').show();
         },
         open: function (e, ui, $t) {
-
             var $t = $t || $(this);
-
             // This fixes the A element focus issue
-            $t.closest('.ui-dialog').find('a').blur();
-
-            var overlay = $('<div class="ppb-panels-ui-widget-overlay ui-widget-overlay ui-front"></div>').css('z-index', 80001);
-            $t.data('overlay', overlay).closest('.ui-dialog').before(overlay);
+            $t.closest('.ppb-dialog').find('a').blur();
 
         },
         close: function (e, ui, $t) {
@@ -810,14 +799,11 @@
                 $t.trigger('panelsdone', $currentPanel, activeDialog);
             }
 
-            //Set the widget styles
-            panels.pootlePageSetWidgetStyles($('.pootle-style-fields'));
-
             $t.hide();
             $t.data('overlay').remove();
             if( $t.hasClass('ui-dialog-content') ) {
                 //Remove the dialog
-                $t.dialog('destroy').remove();
+                $t.ppbDialog('destroy').remove();
             } else {
                 $('#ppbeditor').attr('name', 'widgets[{$id}][text]');
             }
@@ -842,26 +828,33 @@
                     $currentPanel.find('input[name$="[data]"]').val(JSON.stringify(panelData));
                     $currentPanel.find('input[name$="[info][raw]"]').val(1);
 
-                    $currentPanel.data('dialog', null);
+                    //Set the widget styles
+                    var styles = panels.pootlePageSetWidgetStyles($('.pootle-style-fields'));
+
+                    panelData.info = {
+                        style: styles
+                    };
 
                     //Smart titles
-                    $('html').trigger( 'pootlepb_admin_content_block_title', [ $currentPanel, $currentPanel.panelsGetPanelData() ] );
+                    $('html').trigger( 'pootlepb_admin_content_block_title', [ $currentPanel, panelData ] );
+
+                    $currentPanel.data('dialog', null);
 
                     // Change the title of the panel
                     if( activeDialog.hasClass('ui-dialog-content') ) {
-                        activeDialog.dialog('close');
+                        activeDialog.ppbDialog('close');
                     }
                 }
             }
         ]
     };
 
-    panels.ppbEditorButtonEvents = function() {
-        $('#ppb-editor-container').find('.ui-dialog-titlebar-close').off('click').on('click', function () {
+    panels.ppbEditorPanelButtonEvents = function() {
+        $('#ppb-editor-container').find('.ppb-dialog-titlebar-close').off('click').on('click', function () {
             panels.block_editor_dialog_properties.close(undefined, undefined, $('#ppb-editor-container'));
             $('#ppb-editor-container').hide();
         });
-        $('#ppb-editor-container').find('.ui-dialog-buttonpane .pootle').off('click').click(function () {
+        $('#ppb-editor-container').find('.ppb-dialog-buttonpane .pootle').off('click').click(function () {
             panels.block_editor_dialog_properties.buttons[0].click(undefined, undefined, $('#ppb-editor-container'));
             panels.block_editor_dialog_properties.close(undefined, undefined, $('#ppb-editor-container'));
             $('#ppb-editor-container').hide();

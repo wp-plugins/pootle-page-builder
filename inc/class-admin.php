@@ -112,10 +112,15 @@ final class Pootle_Page_Builder_Admin {
 
 		$panels_data = pootlepb_get_panels_data_from_post();
 
+		if ( empty( $panels_data['grids'] ) ) {
+			return;
+		}
+
 		if ( function_exists( 'wp_slash' ) ) {
 			$panels_data = wp_slash( $panels_data );
 		}
 		update_post_meta( $post_id, 'panels_data', $panels_data );
+
 	}
 
 	public function is_pb_post_empty( $maybe_empty, $postarr ) {
@@ -146,6 +151,11 @@ final class Pootle_Page_Builder_Admin {
 
 		//User capability
 		if ( ! current_user_can( 'edit_post', $post->id ) ) {
+			return false;
+		}
+
+		if ( ! empty( $_POST['pootlepb_noPB'] ) ) {
+			delete_post_meta( $post->ID, 'panels_data' );
 			return false;
 		}
 
@@ -182,7 +192,7 @@ final class Pootle_Page_Builder_Admin {
 	 */
 	public function options_init() {
 		register_setting( 'pootlepage-add-ons', 'pootlepb_add_ons' );
-		register_setting( 'pootlepage-display', 'siteorigin_panels_display', array(
+		register_setting( 'pootlepage-display', 'pootlepb_display', array(
 			$this,
 			'pootlepb_options_sanitize_display',
 		) );
@@ -243,7 +253,7 @@ final class Pootle_Page_Builder_Admin {
 	 *
 	 * @since 0.1.0
 	 */
-	public function options_field_generic( $args, $groupName = 'siteorigin_panels_display' ) {
+	public function options_field_generic( $args, $groupName = 'pootlepb_display' ) {
 		$settings = pootlepb_settings();
 		switch ( $args['type'] ) {
 			case 'hard-uninstall' :

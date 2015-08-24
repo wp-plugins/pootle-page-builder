@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Pootle Page Builder
+Plugin Name: pootle page builder
 Plugin URI: http://pootlepress.com/
 Description: pootle page builder helps you create stunning pages with full width rows including parallax background images & videos.
-Version: 0.2.3
+Version: 0.3.0
 Author: PootlePress
 Author URI: http://pootlepress.com/
 License: GPL version 3
@@ -38,6 +38,13 @@ final class Pootle_Page_Builder {
 	protected $public;
 
 	/**
+	 * @var WP_Query Contains ppb posts
+	 * @access protected
+	 * @since 0.3.0
+	 */
+	public $ppb_posts;
+
+	/**
 	 * Magic __construct
 	 * @since 0.1.0
 	 */
@@ -52,7 +59,7 @@ final class Pootle_Page_Builder {
 	 * @since 0.1.0
 	 */
 	private function constants() {
-		define( 'POOTLEPB_VERSION', '0.2.3' );
+		define( 'POOTLEPB_VERSION', '0.3.0' );
 		define( 'POOTLEPB_BASE_FILE', __FILE__ );
 		define( 'POOTLEPB_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'POOTLEPB_URL', plugin_dir_url( __FILE__ ) );
@@ -101,6 +108,7 @@ final class Pootle_Page_Builder {
 		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
+		add_action( 'admin_init', array( $this, 'ppb_compatibility' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 		add_action( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_action_links' ) );
@@ -111,19 +119,78 @@ final class Pootle_Page_Builder {
 	 * @since 0.1.0
 	 */
 	public function activate() {
+
+		//Updating version
 		add_option( 'pootlepb_initial_version', POOTLEPB_VERSION, '', 'no' );
 
 		$current_user = wp_get_current_user();
-
 		//Get first name if set
 		$username = '';
 		if ( ! empty( $current_user->user_firstname ) ) {
 			$username = " {$current_user->user_firstname}";
 		}
-
 		$welcome_message = "<b>Hey{$username}! Welcome to Page builder.</b> You're all set to start building stunning pages!<br><a class='button pootle' href='" . admin_url( '/admin.php?page=page_builder' ) . "'>Get started</a>";
-
 		pootlepb_add_admin_notice( 'welcome', $welcome_message, 'updated pootle' );
+	}
+
+	/**
+	 * Return Query with all posts using ppb
+	 * @return WP_Query
+	 * @since 0.3.0
+	 */
+	public function ppb_posts() {
+
+		if ( empty( $this->ppb_posts ) ) {
+			//Get all posts using page builder
+			$args  = array(
+				'post_type'  => pootlepb_settings( 'post-types' ),
+				'posts_per_page' => -1,
+				'meta_query' => array(
+					array(
+						'key'     => 'panels_data',
+						'compare' => 'EXISTS',
+					),
+				)
+			);
+			$this->ppb_posts = new WP_Query( $args );
+		}
+
+		return $this->ppb_posts;
+	}
+
+	/**
+	 * Return Query with all posts using ppb
+	 * @return WP_Query
+	 * @since 0.3.0
+	 */
+	public function ppb_compatibility() {
+
+		$version = get_option( 'pootlepb_version' );
+		if ( version_compare( $version, '0.3.0', '<' ) ) {
+			$this->v023_to_v030();
+		}
+		update_option( 'pootlepb_version', POOTLEPB_VERSION, '', 'no' );
+
+	}
+
+	/**
+	 * Sorts v0.2.3 to 0.3.0 issues
+	 * @todo remove after 1.1
+	 * @since 0.3.0
+	 */
+	private function v023_to_v030() {
+		$query = $this->ppb_posts();
+
+		foreach ( $query->posts as $post ) {
+
+			$data = get_post_meta( $post->ID, 'panels_data', true );
+			foreach( $data['grids'] as $k => &$grid ) {
+				if ( ! empty( $grid['style']['bg_overlay_opacity'] ) ) {
+					$grid['style']['bg_overlay_opacity'] = 1 - $grid['style']['bg_overlay_opacity'];
+				}
+			}
+			update_post_meta( $post->ID, 'panels_data', $data );
+		}
 	}
 
 	/**
@@ -131,17 +198,8 @@ final class Pootle_Page_Builder {
 	 * @since 0.1.0
 	 */
 	public function deactivate() {
-		//Get all posts using page builder
-		$args  = array(
-			'post_type'  => 'page',
-			'meta_query' => array(
-				array(
-					'key'     => 'panels_data',
-					'compare' => 'EXISTS',
-				),
-			)
-		);
-		$query = new WP_Query( $args );
+
+		$query = $this->ppb_posts();
 
 		foreach ( $query->posts as $post ) {
 
@@ -156,6 +214,9 @@ final class Pootle_Page_Builder {
 	 * @since 0.1.0
 	 */
 	protected function pb_post_content( $post ) {
+		if ( empty( $panels_data['grids'] ) ) {
+			return;
+		}
 
 		$panel_content = $GLOBALS['Pootle_Page_Builder_Render_Layout']->panels_render( $post->ID );
 
@@ -186,13 +247,14 @@ final class Pootle_Page_Builder {
 	 */
 	public function enqueue(){
 		global $pagenow;
-
+		wp_register_script( 'pootlepb-ui', POOTLEPB_URL . 'js/ppb-ui.js', array( 'jquery-ui-dialog', 'jquery-ui-tabs' ), POOTLEPB_VERSION );
+		wp_register_style( 'pootlepb-ui-styles', POOTLEPB_URL . 'css/ppb-jq-ui.css', array() );
 		wp_enqueue_style( 'pootlepage-main-admin', plugin_dir_url( __FILE__ ) . 'css/main-admin.css', array(), POOTLEPB_VERSION );
 
 		if ( $pagenow == 'admin.php' && false !== strpos( filter_input( INPUT_GET, 'page' ), 'page_builder' ) ) {
-			wp_enqueue_script( 'pootlepb-ui-dialog', POOTLEPB_URL . 'js/ui.dialog.js', array( 'jquery-ui-dialog' ), POOTLEPB_VERSION );
-			wp_enqueue_script( 'ppb-settings-script', POOTLEPB_URL . 'js/settings.js', array( 'pootlepb-ui-dialog' ) );
-			wp_enqueue_style( 'ppb-settings-styles', POOTLEPB_URL . 'css/settings.css', array() );
+			wp_enqueue_script( 'pootlepb-ui' );
+			wp_enqueue_style( 'pootlepb-ui-styles' );
+			wp_enqueue_script( 'ppb-settings-script', POOTLEPB_URL . 'js/settings.js', array( 'pootlepb-ui' ) );
 			wp_enqueue_style( 'ppb-option-admin', POOTLEPB_URL . 'css/option-admin.css', array(), POOTLEPB_VERSION );
 			wp_enqueue_script( 'ppb-option-admin-js', POOTLEPB_URL . 'js/option-admin.js', array( 'jquery' ), POOTLEPB_VERSION );
 		}
