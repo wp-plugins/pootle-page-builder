@@ -1,11 +1,11 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: shramee
- * Date: 26/6/15
- * Time: 11:56 PM
+ * Content block panel template
+ * Used by content editor panels in pootle page builder post
+ * @author pootlepress
  * @since 0.1.0
  */
+
 global $pootlepb_content_block_tabs;
 
 /**
@@ -63,9 +63,9 @@ ksort( $panel_tabs );
 				<div id="pootle-<?php echo $k; ?>-tab" class="tab-contents pootle-style-fields <?php echo $tab['class']; ?>">
 
 					<?php
-					do_action( "pootlepb_content_block_{$k}_tab", $request );
+					do_action( "pootlepb_content_block_{$k}_tab" );
 					pootlepb_block_dialog_fields_output( $k );
-					do_action( "pootlepb_content_block_{$k}_tab_after_fields", $request );
+					do_action( "pootlepb_content_block_{$k}_tab_after_fields" );
 					?>
 
 				</div>

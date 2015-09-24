@@ -197,7 +197,7 @@
             // The done button
             doneClicked = false;
 
-            window.$currentPanel = $(this).parents('.panel');
+            window.$currentPanel = $currentPanel;
 
             // Load the widget form
             var widgetClass = type;
@@ -281,9 +281,9 @@
                 //Add events to the editor buttons
                 panels.ppbEditorPanelButtonEvents();
 
-                var $add_content_panel =  $('.ppb-add-content-panel');
+                var $addContent_panel =  $('.ppb-add-content-panel');
 
-                $add_content_panel
+                $addContent_panel
                     .ppbTabs({
                         activate: function (e, ui) {
                             var $t = $(this),
@@ -295,9 +295,9 @@
                     })
                     .addClass("ui-tabs-vertical ui-helper-clearfix");
 
-                panels.addInputFieldEventHandlers($add_content_panel);
+                panels.addInputFieldEventHandlers($addContent_panel);
 
-                var $t = $add_content_panel,
+                var $t = $addContent_panel,
                     title = $t.find('.ui-tabs-active a').html();
                 $('.ppb-add-content-panel .ui-dialog-titlebar .ui-dialog-title').html(title);
 
@@ -306,15 +306,17 @@
                 //Show the editor
                 activeDialog.css('opacity', '1');
 
-                //Get style data in fields
-                panels.pootlePageGetWidgetStyles($('.pootle-style-fields'));
+                //Get style data and put it in fields
+                var json = $currentPanel.find('input[name$="[style]"]').val(),
+                    styleData = JSON.parse(json);
+                panels.setStylesToFields($('.pootle-style-fields:not(#pootle-editor-tab)'), styleData);
 
                 // This is to refresh the dialog positions
                 $(window).resize();
                 $(document).trigger('panelssetup', $currentPanel, activeDialog);
                 $('#panels-container .panels-container').trigger('refreshcells');
 
-                $('html').trigger( 'pootlepb_admin_editor_panel_done', [ $add_content_panel ] );
+                $('html').trigger( 'pootlepb_admin_editor_panel_done', [ $addContent_panel, styleData ] );
 
                 // This gives panel types a chance to influence the form
                 activeDialog.removeClass('ui-dialog-content-loading').trigger('panelsopen', $currentPanel, activeDialog);
@@ -390,8 +392,10 @@
 
                         $(".ppb-cool-panel-wrap li").removeClass("ui-corner-top").addClass("ui-corner-left");
 
-                        //Get style data in fields
-                        panels.pootlePageGetWidgetStyles($('.pootle-style-fields:not(#pootle-editor-tab)'));
+                        //Get style data and put it in fields
+                        var json = window.$currentPanel.find('input[name$="[style]"]').val(),
+                            styleData = JSON.parse(json);
+                        panels.setStylesToFields($('.pootle-style-fields:not(#pootle-editor-tab)', styleData));
 
                         $(window).resize();
 
@@ -701,16 +705,11 @@
         });
     };
 
-    panels.pootlePageGetWidgetStyles = function ($styleForm) {
-        var $styleDataField = window.$currentPanel.find('input[name$="[style]"]');
-        var json = $styleDataField.val();
-        var styleData = JSON.parse(json);
+    panels.setStylesToFields = function ($styleForm, styleData) {
         // by default, set checkbox to unchecked,
-        // so when a widget has no saved checkbox setting, and widget styling dialog is display,
-        // it will be set to unchecked,
-        // this is to set hide widget title checkbox
-        $styleForm.find('input[type=checkbox]').prop('checked', false);
-
+        $styleForm.find('input[type=checkbox]')
+            .prop('checked', false)
+            .change();
         $styleForm.find('input[type=text], input[type=hidden], select, input[type=number], textarea')
             .val('')
             .change()
@@ -731,7 +730,6 @@
                 } else if ($field.attr('data-style-field-type') == "slider" ) {
                     $field.siblings('.ppb-slider').slider('value',styleData[key]);
                 } else if ($field.attr('data-style-field-type') == "radio" ) {
-                    console.log(styleData[key]);
                     $field.filter('[value="' + styleData[key] + '"]').prop('checked', true);
                 } else if ($field.attr('data-style-field-type') == "checkbox") {
                     if (styleData[key] == $field.val()) {
@@ -749,9 +747,7 @@
 
     }
 
-    panels.pootlePageSetWidgetStyles = function ($styleForm) {
-        var $currentPanel = window.$currentPanel;
-
+    panels.getStylesFromFields = function ($styleForm) {
         // from values in dialog fields, set style data into hidden fields
         var styleData = {};
         $styleForm.find('[dialog-field]').each(function () {
@@ -768,8 +764,6 @@
             }
 
         });
-
-        $currentPanel.find('input[name$="[style]"]').val(JSON.stringify(styleData));
 
         return styleData;
     };
@@ -829,7 +823,9 @@
                     $currentPanel.find('input[name$="[info][raw]"]').val(1);
 
                     //Set the widget styles
-                    var styles = panels.pootlePageSetWidgetStyles($('.pootle-style-fields'));
+                    var styles = panels.getStylesFromFields($('.pootle-style-fields'));
+
+                    window.$currentPanel.find('input[name$="[style]"]').val(JSON.stringify(styles));
 
                     panelData.info = {
                         style: styles

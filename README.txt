@@ -15,14 +15,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Description ==
 
->Please note: pootle page builder is still in beta & therefore we do not recommend using it for production (live sites). 
->Please read [this post](http://www.pootlepress.com/2015/07/try-out-the-all-new-pootle-page-builder-in-beta/) on how to report bugs.
-
-= What is pootle page builder? =
-
 pootle page builder helps you build compelling WordPress pages easily. No more boring, linear, article pages that are as limited as your posts. 
-
-= What can I do with pootle page builder? =
 
 With pootle page builder you can:
 
@@ -98,7 +91,23 @@ We encourage everyone to contribute their ideas, thoughts and code snippets. Thi
 
 == Changelog ==
 
-= 0.3.0 = 
+= 1.0.0 =
+* 2015-09-15
+ * New - New pootle page builder action hook `pootlepb_before_pb` executed before pb row on public end
+ * New - New pootle page builder action hook `pootlepb_after_pb` executed after pb row on public end
+ * New - Auto update for non wp.org hosted add-ons
+ * New - All methods, functions and constants documented
+ * New - File and class documentation blocks more descriptive
+ * New - Add-on keys management page in settings
+ * Tweak - Improved slider control to allow actual value as well as percentage of max
+ * Tweak - Custom unit for slider ( px, em, ms etc. instead of % only )
+ * Tweak - #pootle-page-builder on public end positioned relative
+
+= 0.3.1 =
+* 2015-08-19
+ * Fix - Page builder ui js issues
+
+= 0.3.0 =
 * 2015-08-19
  * New - Add-on page
  * New - Chosen multi select fields supported for row settings panel and content editor panel
