@@ -15,7 +15,11 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Description ==
 
+= What is pootle page builder? =
+
 pootle page builder helps you build compelling WordPress pages easily. No more boring, linear, article pages that are as limited as your posts. 
+
+= What can I do with pootle page builder? =
 
 With pootle page builder you can:
 
