@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: shramee
- * Date: 25/6/15
- * Time: 11:29 PM
+ * Contains Pootle_Page_Builder_Content_Block class
+ * @author pootlepress
  * @since 0.1.0
  */
 
@@ -13,14 +11,13 @@
  */
 final class Pootle_Page_Builder_Content_Block {
 	/**
-	 * @var Pootle_Page_Builder_Content_Block
+	 * @var Pootle_Page_Builder_Content_Block Instance
 	 * @since 0.1.0
 	 */
 	protected static $instance;
 
 	/**
 	 * Magic __construct
-	 * $since 1.0.0
 	 * @since 0.1.0
 	 */
 	public function __construct() {
@@ -43,9 +40,7 @@ final class Pootle_Page_Builder_Content_Block {
 
 	/**
 	 * Enables oEmbed in content blocks
-	 *
 	 * @param string $text
-	 *
 	 * @return string
 	 * @filter pootlepb_content_block
 	 * @since 0.1.0
@@ -64,14 +59,12 @@ final class Pootle_Page_Builder_Content_Block {
 
 	/**
 	 * Opens the content block container with styles and classes
-	 *
 	 * @param $block_info
 	 * @param $gi
 	 * @param $ci
 	 * @param $pi
 	 * @param $blocks_num
 	 * @param $post_id
-	 *
 	 * @action pootlepb_render_content_block
 	 * @since 0.1.0
 	 */
@@ -93,9 +86,7 @@ final class Pootle_Page_Builder_Content_Block {
 		$styleWithSelector = ''; // Passed with reference
 		$this->set_inline_embed_styles( $attr, $styleWithSelector, $styleArray, $id ); // Get Styles
 
-		if ( ! empty( $styleWithSelector ) ) {
-			echo '<style>' . $styleWithSelector . '</style>';
-		}
+		if ( ! empty( $styleWithSelector ) ) { echo '<style>' . $styleWithSelector . '</style>'; }
 
 		echo '<div ';
 		echo pootlepb_stringify_attributes( $attr );
@@ -104,7 +95,6 @@ final class Pootle_Page_Builder_Content_Block {
 
 	/**
 	 * Sets content block embed and inline css
-	 *
 	 * @param string $attr
 	 * @param array $styleWithSelector
 	 * @param array $styleArray
@@ -113,14 +103,13 @@ final class Pootle_Page_Builder_Content_Block {
 	private function set_inline_embed_styles( &$attr, &$styleWithSelector, $styleArray, $id ) {
 
 		$inlineStyle = '';
-		//Inline styles
-		if ( ! empty( $styleArray['inline-css'] ) ) { $inlineStyle .= $styleArray['inline-css']; }
 
 		$widgetStyleFields = pootlepb_block_styling_fields();
 		foreach ( $widgetStyleFields as $key => $field ) {
+			if ( empty( $field['css'] ) ) { continue; }
 			if ( $field['type'] == 'border' ) {
 				//Border field
-				$this->content_block_border( $inlineStyle, $styleArray, $key, $field );
+				$this->content_block_border( $inlineStyle, $styleWithSelector, $id, $styleArray, $key, $field );
 			} else {
 				//Default for fields
 				$this->default_block_field( $inlineStyle, $styleWithSelector, $styleArray, $id, $key, $field );
@@ -129,51 +118,57 @@ final class Pootle_Page_Builder_Content_Block {
 
 		$this->bg_color_transparency( $inlineStyle, $styleArray );
 
-		$attr['style'] = $inlineStyle;
+		$attr['style'] = $inlineStyle . $styleArray['inline-css'];
 
+		/**
+		 * Filters content block attributes
+		 * @var array $attr Content block attributes
+		 * @var array $style Content block style settings
+		 * @var string $id Unique ID of content block
+		 * @since 0.1.0
+		 */
 		$attr = apply_filters( 'pootlepb_content_block_attributes', $attr, $styleArray, $id );
 	}
 
 	/**
 	 * Renders border for the content block
-	 *
-	 * @param string $inlineStyle
-	 * @param array $styleArray
-	 * @param string $key
-	 * @param array $field
+	 * @param string $inlineStyle inline style
+	 * @param string $styleWithSelector CSS with selector
+	 * @param string $id CSS id
+	 * @param array $styleArray style data
+	 * @param string $key field key
+	 * @param array $field field data
+	 * @since 0.1.0
 	 */
-	private function content_block_border( &$inlineStyle, $styleArray, $key, $field ) {
-
-		//Set border color key if not set
-		if ( empty( $styleArray[ $key . '-color' ] ) ) {
-			$styleArray[ $key . '-color' ] = '';
-		}
+	private function content_block_border( &$inlineStyle, &$styleWithSelector, $id, $styleArray, $key, $field ) {
 
 		//Border
 		if ( ! empty( $styleArray[ $key . '-width' ] ) ) {
-			$inlineStyle .= $field['css'] . ': ' . $styleArray[ $key . '-width' ] . 'px solid ' . $styleArray[ $key . '-color' ] . ';';
+			if ( empty( $field['selector'] ) ) {
+				$inlineStyle .= $field['css'] . ': ' . $styleArray[ $key . '-width' ] . 'px solid ' . $styleArray[ $key . '-color' ] . ';';
+			} else {
+				$styleWithSelector .= '#' . $id . ' ' . $field['selector'] . ' { ' . $field['css'] . ': ' . $styleArray[ $key . '-width' ] . 'px solid ' . $styleArray[ $key . '-color' ] . ';}';
+			}
 		}
 	}
 
 	/**
 	 * Fallback content block style renderer
-	 *
 	 * @param string $inlineStyle
 	 * @param array $styleWithSelector
 	 * @param array $styleArray
 	 * @param string $id
 	 * @param string $key
 	 * @param array $field
+	 * @since 0.1.0
 	 */
 	private function default_block_field( &$inlineStyle, &$styleWithSelector, $styleArray, $id, $key, $field ) {
 
 		if ( ! empty( $styleArray[ $key ] ) ) {
 
-			if ( empty( $field['css'] ) ) {
-				return;
-			}
+			$unit = '';
 
-			$unit = $this->get_unit( $field );
+			if ( ! empty( $field['unit'] ) ) { $unit = $field['unit']; }
 
 			if ( ! isset( $field['selector'] ) ) {
 				//No selector
@@ -185,27 +180,20 @@ final class Pootle_Page_Builder_Content_Block {
 		}
 	}
 
-	private function get_unit( $field ){
-
-		$unit = '';
-
-		//Assign Unit if not empty
-		if ( ! empty( $field['unit'] ) ) {
-			$unit = $field['unit'];
-		}
-
-		return $unit;
-	}
+	/**
+	 * Sets transparency for content block bg color
+	 * @param string $style Content CSS
+	 * @param array $set Settings
+	 * @since 0.2.3
+	 */
 	private function bg_color_transparency( &$style, $set ) {
 		if ( ! empty( $set['background-transparency'] ) && ! empty( $set['background-color'] ) ) {
-			$style .= 'background-color: rgba( ' . pootlepb_hex2rgb( $set['background-color'] ) . ', ' . ( 1 - $set['background-transparency'] ) . ' )';
+			$style .= 'background-color: rgba( ' . pootlepb_hex2rgb( $set['background-color'] ) . ', ' . ( 1 - $set['background-transparency'] ) . ' ); ';
 		}
 	}
 	/**
 	 * Render the Content Panel.
-	 *
 	 * @param string $widget_info The widget class name.
-	 *
 	 * @since 0.1.0
 	 */
 	public function render_content_block( $block_info ) {
@@ -240,23 +228,13 @@ final class Pootle_Page_Builder_Content_Block {
 
 	/**
 	 * Output TMCE Editor
-	 *
 	 * @param $request
-	 *
 	 * @since 0.1.0
 	 */
-	public function panels_editor( $request ) {
+	public function panels_editor() {
 		//Init text to populate in editor
-		$text = '';
-		if ( ! empty( $request['instance'] ) ) {
-			$instance = json_decode( $request['instance'] );
-			if ( ! empty( $instance->text ) ) {
-				$text = $instance->text;
-			}
-		}
-
 		wp_editor(
-			$text,
+			'',
 			'ppbeditor',
 			array(
 				'textarea_name'  => 'widgets[{$id}][text]',
@@ -268,28 +246,6 @@ final class Pootle_Page_Builder_Content_Block {
 				)
 			)
 		);
-	}
-
-	/**
-	 * Display a widget form with the provided data
-	 *
-	 * @param array|null $request Request data ($_POST/$_GET)
-	 *
-	 * @since 0.1.0
-	 */
-	public function editor_panel( $request = null ) {
-		require POOTLEPB_DIR . 'tpl/content-block-panel.php';
-	}
-
-	/**
-	 * Handles ajax requests for the content panel
-	 * @uses Pootle_Page_Builder_Content_Block::editor_panel()
-	 * @since 0.1.0
-	 */
-	public function ajax_content_panel() {
-		$request = array_map( 'stripslashes_deep', $_REQUEST );
-		$this->editor_panel( $request );
-		exit();
 	}
 
 	/**
@@ -309,6 +265,10 @@ final class Pootle_Page_Builder_Content_Block {
 		return $tabs;
 	}
 
+	/**
+	 * Outputs content editor panel
+	 * @since 0.1.0
+	 */
 	public function ppb_tmce_dialog() {
 
 		$screen = get_current_screen();
@@ -331,7 +291,7 @@ final class Pootle_Page_Builder_Content_Block {
 					class="panel-dialog dialog-form widget-dialog-pootle_pb_content_block ppb-dialog-content ppb-widget-content"
 					id="ppb-id-7">
 					<?php
-					$this->editor_panel();
+					require POOTLEPB_DIR . 'tpl/content-block-panel.php';
 					?>
 				</div>
 				<div class="ppb-dialog-buttonpane ppb-widget-content ppb-helper-clearfix">

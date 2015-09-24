@@ -897,9 +897,9 @@ input:disabled{
     background: #f5f5f5;
 }
 
-.ui-slider.ui-slider{
-    margin: 3px 0 0;
-    width: 200px;   
+.ppb-slider.ui-slider{
+    margin: 3px 5px 0 0;
+    width: 200px;
 }
 
 .dashicons-editor-help.tooltip {
@@ -1288,7 +1288,7 @@ when editing event widget from Event Calendar Pro */
 }
 
 .ppb-cool-panel-container .ppb-dialog-buttonpane {
-    padding: 16px;    
+    padding: 16px;
 }
 
 .ppb-cool-panel-container .ppb-dialog-content {
@@ -1319,12 +1319,10 @@ when editing event widget from Event Calendar Pro */
 .ppb-cool-panel-wrap > div.ppb-widget-content {
     padding: 16px;
     margin: 0 0 0 200px;
-';
     height: 100%;
     overflow: auto;
     box-sizing: border-box;
     background: #fff;
-    height: 100%;
 }
 
 .ppb-cool-panel-wrap > ul > li > a {
@@ -1386,4 +1384,10 @@ when editing event widget from Event Calendar Pro */
 }
 .ppb-cool-panel-container .chzn-container {
     width: 205px !important;
+}
+.ppb-cool-panel-container .chosen-container-multi .chosen-choices{
+    border: 1px solid #ddd;
+    background: none;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
 }
